@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.web.context.WebServerApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.env.Environment;
@@ -21,6 +22,13 @@ public class PrettyPlatformApplication implements ApplicationListener<ContextRef
     public void onApplicationEvent(ContextRefreshedEvent event) {
         Environment env = event.getApplicationContext().getEnvironment();
         String port = env.getProperty("server.port", "8080");
-        logger.info("Swagger UI available at http://localhost:{}/swagger-ui.html", port);
+        if (event.getApplicationContext() instanceof WebServerApplicationContext webServerContext
+                && webServerContext.getWebServer() != null) {
+            port = String.valueOf(webServerContext.getWebServer().getPort());
+        }
+        String swaggerUiPath = env.getProperty("springdoc.swagger-ui.path", "/swagger-ui.html");
+        String apiDocsPath = env.getProperty("springdoc.api-docs.path", "/v3/api-docs");
+        logger.info("Swagger UI available at http://localhost:{}{}", port, swaggerUiPath);
+        logger.info("OpenAPI docs available at http://localhost:{}{}", port, apiDocsPath);
     }
 }

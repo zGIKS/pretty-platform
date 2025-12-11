@@ -17,7 +17,7 @@ This is a simple Spring Boot application with Swagger/OpenAPI documentation.
    mvn spring-boot:run
    ```
 
-3. Open your browser and go to `http://localhost:8080/swagger-ui.html` to access the Swagger UI.
+3. Open your browser and go to `http://localhost:8082/swagger-ui/index.html` to access the Swagger UI (OpenAPI docs are also available at `http://localhost:8082/api-docs`).
 
 4. You can test the `/hello` endpoint from the Swagger UI.
 
@@ -27,7 +27,9 @@ This is a simple Spring Boot application with Swagger/OpenAPI documentation.
 
 ## Configuration
 
-The application is configured to run on port 8080 by default. You can change this in `src/main/resources/application.properties`.
+- `server.port=8082` – change the port if needed.
+- `springdoc.api-docs.path=/api-docs` – OpenAPI JSON path consumed by Swagger UI.
+- `springdoc.swagger-ui.path=/swagger-ui.html` – entry point for the UI (also reachable via `/swagger-ui/index.html`).
 
 ## Building the Project
 
@@ -37,4 +39,4 @@ To build the project, run:
 mvn clean install
 ```
 
-This will create a JAR file in the `target` directory that you can run with `java -jar target/demo-0.0.1-SNAPSHOT.jar`.
+This will create a JAR file in the `target` directory that you can run with `java -jar target/pretty-0.0.1-SNAPSHOT.jar`.

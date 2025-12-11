@@ -1,4 +1,4 @@
-package com.pretty.platform.config;
+package com.pretty.platform.shared.infrastructure.documentation.openapi.configuration;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
