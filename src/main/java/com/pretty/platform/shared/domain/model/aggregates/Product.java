@@ -25,12 +25,6 @@ public class Product {
     @Embedded
     private Brand brand;
 
-    @Embedded
-    private Price price;
-
-    @Embedded
-    private DiscountPrice discountPrice;
-
     @ElementCollection
     @CollectionTable(name = "product_categories", joinColumns = @JoinColumn(name = "product_id"))
     private List<Category> categories;
@@ -55,12 +49,10 @@ public class Product {
 
     protected Product() {}
 
-    public Product(ProductTitle title, ProductDescription description, Brand brand, Price price, DiscountPrice discountPrice, List<Category> categories, List<Subcategory> subcategories, List<Tag> tags, List<ImageUrl> imageUrls) {
+    public Product(ProductTitle title, ProductDescription description, Brand brand, List<Category> categories, List<Subcategory> subcategories, List<Tag> tags, List<ImageUrl> imageUrls) {
         this.title = title;
         this.description = description;
         this.brand = brand;
-        this.price = price;
-        this.discountPrice = discountPrice;
         this.categories = categories;
         this.subcategories = subcategories;
         this.tags = tags;
@@ -74,8 +66,6 @@ public class Product {
     public ProductTitle getTitle() { return title; }
     public ProductDescription getDescription() { return description; }
     public Brand getBrand() { return brand; }
-    public Price getPrice() { return price; }
-    public DiscountPrice getDiscountPrice() { return discountPrice; }
     public List<Category> getCategories() { return categories; }
     public List<Subcategory> getSubcategories() { return subcategories; }
     public List<Tag> getTags() { return tags; }

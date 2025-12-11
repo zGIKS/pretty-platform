@@ -10,7 +10,7 @@ import java.util.Optional;
  * External Product Service
  * ACL implementation for accessing Product from catalog context
  */
-@Service
+@Service("inventoryExternalProductService")
 public class ExternalProductService {
 
     private final CatalogContextFacade catalogContextFacade;
