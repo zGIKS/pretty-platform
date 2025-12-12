@@ -16,17 +16,14 @@ public class PromotionsCommandServiceImpl implements PromotionsCommandService {
 
     private final BasePriceRepository basePriceRepository;
     private final DiscountRepository discountRepository;
-    private final CampaignPriceRepository campaignPriceRepository;
     private final ExternalProductService externalProductService;
 
     public PromotionsCommandServiceImpl(
             BasePriceRepository basePriceRepository,
             DiscountRepository discountRepository,
-            CampaignPriceRepository campaignPriceRepository,
             ExternalProductService externalProductService) {
         this.basePriceRepository = basePriceRepository;
         this.discountRepository = discountRepository;
-        this.campaignPriceRepository = campaignPriceRepository;
         this.externalProductService = externalProductService;
     }
 
@@ -58,20 +55,5 @@ public class PromotionsCommandServiceImpl implements PromotionsCommandService {
 
         var discount = new Discount(productId, discountAmount, discountPercentage, validityPeriod);
         discountRepository.save(discount);
-    }
-
-    @Override
-    @Transactional
-    public void createCampaignPrice(CreateCampaignPriceCommand command) {
-        // Validate product exists
-        externalProductService.validateProductExists(command.productId());
-
-        var campaignName = new com.pretty.platform.promotions.domain.model.valueobjects.CampaignName(command.campaignName());
-        var productId = new com.pretty.platform.promotions.domain.model.valueobjects.ProductId(command.productId());
-        var campaignPrice = new com.pretty.platform.promotions.domain.model.valueobjects.Price(command.campaignPrice(), command.currency());
-        var validityPeriod = new com.pretty.platform.promotions.domain.model.valueobjects.ValidityPeriod(command.startDate(), command.endDate());
-
-        var campaignPriceEntity = new CampaignPrice(campaignName, productId, campaignPrice, validityPeriod);
-        campaignPriceRepository.save(campaignPriceEntity);
     }
 }

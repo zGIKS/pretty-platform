@@ -16,9 +16,4 @@ public interface PromotionsCommandService {
      * Creates a discount for a product
      */
     void createDiscount(CreateDiscountCommand command);
-
-    /**
-     * Creates a campaign price for a product
-     */
-    void createCampaignPrice(CreateCampaignPriceCommand command);
 }
