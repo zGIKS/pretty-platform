@@ -2,7 +2,6 @@ package com.pretty.platform.catalog.interfaces.rest.resources;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -20,15 +19,6 @@ public record CreateProductResource(
     @Schema(description = "Product brand", example = "Sony")
     @NotBlank(message = "Brand is required")
     String brand,
-
-    @Schema(description = "Product price", example = "99.99")
-    @NotNull(message = "Price is required")
-    @DecimalMin(value = "0.01", message = "Price must be positive")
-    BigDecimal price,
-
-    @Schema(description = "Discount price", example = "79.99")
-    @DecimalMin(value = "0.00", message = "Discount price must be non-negative")
-    BigDecimal discountPrice,
 
     @Schema(description = "Product categories", example = "[\"Electronics\", \"Audio\"]")
     List<@NotBlank String> categories,

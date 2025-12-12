@@ -1,7 +1,6 @@
 package com.pretty.platform.catalog.interfaces.rest.resources;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -22,12 +21,6 @@ public record ProductResource(
 
     @Schema(description = "Product brand", example = "Sony")
     String brand,
-
-    @Schema(description = "Product price", example = "99.99")
-    BigDecimal price,
-
-    @Schema(description = "Discount price", example = "79.99")
-    BigDecimal discountPrice,
 
     @Schema(description = "Product categories", example = "[\"Electronics\", \"Audio\"]")
     List<String> categories,

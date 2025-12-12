@@ -61,3 +61,6 @@ logs/
 # Temporary files
 *.tmp
 *.swp
+
+# environment files
+.env
