@@ -21,19 +21,4 @@ public interface PromotionsCommandService {
      * Creates a campaign price for a product
      */
     void createCampaignPrice(CreateCampaignPriceCommand command);
-
-    /**
-     * Creates a coupon
-     */
-    void createCoupon(CreateCouponCommand command);
-
-    /**
-     * Creates a pack
-     */
-    void createPack(CreatePackCommand command);
-
-    /**
-     * Creates a combo
-     */
-    void createCombo(CreateComboCommand command);
 }

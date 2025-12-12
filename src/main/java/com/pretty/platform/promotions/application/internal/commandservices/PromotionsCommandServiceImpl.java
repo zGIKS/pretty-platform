@@ -17,25 +17,16 @@ public class PromotionsCommandServiceImpl implements PromotionsCommandService {
     private final BasePriceRepository basePriceRepository;
     private final DiscountRepository discountRepository;
     private final CampaignPriceRepository campaignPriceRepository;
-    private final CouponRepository couponRepository;
-    private final PackRepository packRepository;
-    private final ComboRepository comboRepository;
     private final ExternalProductService externalProductService;
 
     public PromotionsCommandServiceImpl(
             BasePriceRepository basePriceRepository,
             DiscountRepository discountRepository,
             CampaignPriceRepository campaignPriceRepository,
-            CouponRepository couponRepository,
-            PackRepository packRepository,
-            ComboRepository comboRepository,
             ExternalProductService externalProductService) {
         this.basePriceRepository = basePriceRepository;
         this.discountRepository = discountRepository;
         this.campaignPriceRepository = campaignPriceRepository;
-        this.couponRepository = couponRepository;
-        this.packRepository = packRepository;
-        this.comboRepository = comboRepository;
         this.externalProductService = externalProductService;
     }
 
@@ -82,55 +73,5 @@ public class PromotionsCommandServiceImpl implements PromotionsCommandService {
 
         var campaignPriceEntity = new CampaignPrice(campaignName, productId, campaignPrice, validityPeriod);
         campaignPriceRepository.save(campaignPriceEntity);
-    }
-
-    @Override
-    @Transactional
-    public void createCoupon(CreateCouponCommand command) {
-        // Validate product exists
-        externalProductService.validateProductExists(command.productId());
-
-        var couponCode = new com.pretty.platform.promotions.domain.model.valueobjects.CouponCode(command.couponCode());
-        var productId = new com.pretty.platform.promotions.domain.model.valueobjects.ProductId(command.productId());
-        var discountAmount = command.discountAmount() != null ?
-            new com.pretty.platform.promotions.domain.model.valueobjects.DiscountAmount(command.discountAmount()) : null;
-        var discountPercentage = command.discountPercentage() != null ?
-            new com.pretty.platform.promotions.domain.model.valueobjects.DiscountPercentage(command.discountPercentage()) : null;
-        var validityPeriod = new com.pretty.platform.promotions.domain.model.valueobjects.ValidityPeriod(command.startDate(), command.endDate());
-
-        var coupon = new Coupon(couponCode, productId, discountAmount, discountPercentage, validityPeriod, command.maxUsage());
-        couponRepository.save(coupon);
-    }
-
-    @Override
-    @Transactional
-    public void createPack(CreatePackCommand command) {
-        // Validate all products exist
-        for (var productId : command.productIds()) {
-            externalProductService.validateProductExists(productId);
-        }
-
-        var packName = new com.pretty.platform.promotions.domain.model.valueobjects.PackName(command.packName());
-        var packPrice = new com.pretty.platform.promotions.domain.model.valueobjects.Price(command.packPrice(), command.currency());
-        var validityPeriod = new com.pretty.platform.promotions.domain.model.valueobjects.ValidityPeriod(command.startDate(), command.endDate());
-
-        var pack = new Pack(packName, command.productIds(), packPrice, validityPeriod);
-        packRepository.save(pack);
-    }
-
-    @Override
-    @Transactional
-    public void createCombo(CreateComboCommand command) {
-        // Validate all products exist
-        for (var productId : command.productIds()) {
-            externalProductService.validateProductExists(productId);
-        }
-
-        var comboName = new com.pretty.platform.promotions.domain.model.valueobjects.ComboName(command.comboName());
-        var comboPrice = new com.pretty.platform.promotions.domain.model.valueobjects.Price(command.comboPrice(), command.currency());
-        var validityPeriod = new com.pretty.platform.promotions.domain.model.valueobjects.ValidityPeriod(command.startDate(), command.endDate());
-
-        var combo = new Combo(comboName, command.productIds(), comboPrice, validityPeriod);
-        comboRepository.save(combo);
     }
 }
