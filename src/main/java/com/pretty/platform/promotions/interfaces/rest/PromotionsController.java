@@ -75,29 +75,4 @@ public class PromotionsController {
         var discounts = queryService.getDiscountsByProduct(query);
         return ResponseEntity.ok(discounts);
     }
-
-    // Campaign endpoints
-    @PostMapping("/campaigns")
-    @Operation(summary = "Create campaign price for a product")
-    public ResponseEntity<Void> createCampaignPrice(@RequestBody CreateCampaignPriceResource resource) {
-        var command = CreateCampaignPriceCommandFromResourceAssembler.toCommand(resource);
-        commandService.createCampaignPrice(command);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
-    }
-
-    @GetMapping("/campaigns/active")
-    @Operation(summary = "Get all active campaigns")
-    public ResponseEntity<List<CampaignPrice>> getActiveCampaigns() {
-        var query = new GetActiveCampaignsQuery();
-        var campaigns = queryService.getActiveCampaigns(query);
-        return ResponseEntity.ok(campaigns);
-    }
-
-    @GetMapping("/campaigns/product/{productId}")
-    @Operation(summary = "Get campaigns for a specific product")
-    public ResponseEntity<List<CampaignPrice>> getCampaignsByProduct(@PathVariable String productId) {
-        var query = new GetCampaignsByProductQuery(UUID.fromString(productId));
-        var campaigns = queryService.getCampaignsByProduct(query);
-        return ResponseEntity.ok(campaigns);
-    }
 }

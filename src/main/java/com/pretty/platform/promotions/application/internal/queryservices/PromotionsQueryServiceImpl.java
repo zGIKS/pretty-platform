@@ -20,15 +20,12 @@ public class PromotionsQueryServiceImpl implements PromotionsQueryService {
 
     private final BasePriceRepository basePriceRepository;
     private final DiscountRepository discountRepository;
-    private final CampaignPriceRepository campaignPriceRepository;
 
     public PromotionsQueryServiceImpl(
             BasePriceRepository basePriceRepository,
-            DiscountRepository discountRepository,
-            CampaignPriceRepository campaignPriceRepository) {
+            DiscountRepository discountRepository) {
         this.basePriceRepository = basePriceRepository;
         this.discountRepository = discountRepository;
-        this.campaignPriceRepository = campaignPriceRepository;
     }
 
     @Override
@@ -43,29 +40,13 @@ public class PromotionsQueryServiceImpl implements PromotionsQueryService {
     }
 
     @Override
-    public List<CampaignPrice> getActiveCampaigns(GetActiveCampaignsQuery query) {
-        return campaignPriceRepository.findAllActiveCampaigns(LocalDateTime.now());
-    }
-
-    @Override
     public List<Discount> getDiscountsByProduct(GetDiscountsByProductQuery query) {
         var productId = new com.pretty.platform.promotions.domain.model.valueobjects.ProductId(query.productId());
         return discountRepository.findByProductId(productId);
     }
 
     @Override
-    public List<CampaignPrice> getCampaignsByProduct(GetCampaignsByProductQuery query) {
-        var productId = new com.pretty.platform.promotions.domain.model.valueobjects.ProductId(query.productId());
-        return campaignPriceRepository.findByProductId(productId);
-    }
-
-    @Override
     public List<Discount> getAllDiscounts(GetAllDiscountsQuery query) {
         return discountRepository.findAll();
-    }
-
-    @Override
-    public List<CampaignPrice> getAllCampaigns(GetAllCampaignsQuery query) {
-        return campaignPriceRepository.findAll();
     }
 }

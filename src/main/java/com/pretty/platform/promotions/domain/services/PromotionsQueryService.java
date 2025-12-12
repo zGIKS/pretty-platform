@@ -22,27 +22,12 @@ public interface PromotionsQueryService {
     List<Discount> getActiveDiscounts(GetActiveDiscountsQuery query);
 
     /**
-     * Gets all active campaigns
-     */
-    List<CampaignPrice> getActiveCampaigns(GetActiveCampaignsQuery query);
-
-    /**
      * Gets all discounts for a specific product
      */
     List<Discount> getDiscountsByProduct(GetDiscountsByProductQuery query);
 
     /**
-     * Gets all campaigns applicable to a specific product
-     */
-    List<CampaignPrice> getCampaignsByProduct(GetCampaignsByProductQuery query);
-
-    /**
      * Gets all discounts
      */
     List<Discount> getAllDiscounts(GetAllDiscountsQuery query);
-
-    /**
-     * Gets all campaigns
-     */
-    List<CampaignPrice> getAllCampaigns(GetAllCampaignsQuery query);
 }
