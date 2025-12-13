@@ -1,9 +1,11 @@
 package com.pretty.platform.federation.infrastructure.security;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
@@ -34,8 +36,20 @@ public class SecurityConfig {
             .logout(logout -> logout
                 .logoutSuccessUrl("/")
                 .permitAll()
+            )
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(restAuthenticationEntryPoint())
             );
 
         return http.build();
+    }
+
+    @Bean
+    public AuthenticationEntryPoint restAuthenticationEntryPoint() {
+        return (request, response, authException) -> {
+            response.setContentType("application/json");
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"Authentication required to access this resource\"}");
+        };
     }
 }
