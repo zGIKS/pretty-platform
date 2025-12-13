@@ -10,7 +10,6 @@ public record CreateProductCommand(
     String description,
     String brand,
     List<String> categories,
-    List<String> subcategories,
     List<String> tags,
     List<String> imageUrls
 ) {
@@ -23,9 +22,6 @@ public record CreateProductCommand(
         }
         if (categories == null) {
             categories = List.of();
-        }
-        if (subcategories == null) {
-            subcategories = List.of();
         }
         if (tags == null) {
             tags = List.of();

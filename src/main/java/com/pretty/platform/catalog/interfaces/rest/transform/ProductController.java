@@ -1,18 +1,19 @@
 package com.pretty.platform.catalog.interfaces.rest.transform;
 
 import com.pretty.platform.catalog.domain.model.commands.CreateProductCommand;
-import com.pretty.platform.catalog.domain.model.queries.GetAllProductsQuery;
 import com.pretty.platform.catalog.domain.model.queries.GetProductByIdQuery;
+import com.pretty.platform.catalog.domain.model.queries.GetProductsByCategoryAndTagQuery;
+import com.pretty.platform.catalog.domain.model.queries.GetProductsByNameQuery;
 import com.pretty.platform.catalog.domain.services.ProductCommandService;
 import com.pretty.platform.catalog.domain.services.ProductQueryService;
 import com.pretty.platform.catalog.interfaces.rest.resources.CreateProductResource;
 import com.pretty.platform.catalog.interfaces.rest.resources.ProductResource;
 import com.pretty.platform.catalog.domain.model.valueobjects.Category;
-import com.pretty.platform.catalog.domain.model.valueobjects.Subcategory;
 import com.pretty.platform.catalog.domain.model.valueobjects.Tag;
 import com.pretty.platform.catalog.domain.model.valueobjects.ImageUrl;
 import com.pretty.platform.shared.domain.model.aggregates.Product;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import org.springframework.http.HttpStatus;
@@ -51,7 +52,6 @@ public class ProductController {
             resource.description(),
             resource.brand(),
             resource.categories(),
-            resource.subcategories(),
             resource.tags(),
             resource.imageUrls()
         );
@@ -61,9 +61,9 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get product by ID", description = "Retrieves a product by its ID")
+    @Operation(summary = "Get product by ID", description = "Retrieves a product by its unique identifier")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Product found"),
+        @ApiResponse(responseCode = "200", description = "Product found and returned successfully"),
         @ApiResponse(responseCode = "404", description = "Product not found")
     })
     public ResponseEntity<ProductResource> getProductById(@PathVariable UUID id) {
@@ -74,11 +74,59 @@ public class ProductController {
                       .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping
-    @Operation(summary = "Get all products", description = "Retrieves all products in the catalog")
-    @ApiResponse(responseCode = "200", description = "List of products")
-    public ResponseEntity<List<ProductResource>> getAllProducts() {
-        var query = new GetAllProductsQuery();
+    @GetMapping("/tags")
+    @Operation(summary = "Get all tags", description = "Retrieves all distinct tags used in the product catalog")
+    @ApiResponse(responseCode = "200", description = "List of all distinct tags")
+    public ResponseEntity<List<String>> getAllTags() {
+        var tags = productQueryService.getAllTags();
+        return ResponseEntity.ok(tags);
+    }
+
+    @GetMapping("/categories")
+    @Operation(summary = "Get all categories", description = "Retrieves all distinct categories used in the product catalog")
+    @ApiResponse(responseCode = "200", description = "List of all distinct categories")
+    public ResponseEntity<List<String>> getAllCategories() {
+        var categories = productQueryService.getAllCategories();
+        return ResponseEntity.ok(categories);
+    }
+
+    @GetMapping("/filter")
+    @Operation(summary = "Filter products by category and/or tag",
+               description = "Retrieves products filtered by category name and/or tag name. At least one filter parameter must be provided.")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Filtered products returned successfully"),
+        @ApiResponse(responseCode = "400", description = "At least one filter parameter (category or tag) must be provided")
+    })
+    public ResponseEntity<List<ProductResource>> getProductsByCategoryAndTag(
+            @Parameter(description = "Category name to filter by") @RequestParam(required = false) String category,
+            @Parameter(description = "Tag name to filter by") @RequestParam(required = false) String tag) {
+
+        if (category == null && tag == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        var query = new GetProductsByCategoryAndTagQuery(category, tag);
+        var products = productQueryService.handle(query);
+        var resources = products.stream().map(this::toResource).collect(Collectors.toList());
+        return ResponseEntity.ok(resources);
+    }
+
+    @GetMapping("/search")
+    @Operation(summary = "Search products by name",
+               description = "Searches for products by title using case-insensitive partial matching")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Search results returned successfully"),
+        @ApiResponse(responseCode = "400", description = "Search term cannot be empty")
+    })
+    public ResponseEntity<List<ProductResource>> searchProductsByName(
+            @Parameter(description = "Search term for product title", required = true)
+            @RequestParam String name) {
+
+        if (name == null || name.isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
+
+        var query = new GetProductsByNameQuery(name);
         var products = productQueryService.handle(query);
         var resources = products.stream().map(this::toResource).collect(Collectors.toList());
         return ResponseEntity.ok(resources);
@@ -91,7 +139,6 @@ public class ProductController {
             product.getDescription().description(),
             product.getBrand().brand(),
             product.getCategories().stream().map(Category::name).collect(Collectors.toList()),
-            product.getSubcategories().stream().map(Subcategory::name).collect(Collectors.toList()),
             product.getTags().stream().map(Tag::name).collect(Collectors.toList()),
             product.getImageUrls().stream().map(ImageUrl::url).collect(Collectors.toList()),
             product.getCreatedAt(),

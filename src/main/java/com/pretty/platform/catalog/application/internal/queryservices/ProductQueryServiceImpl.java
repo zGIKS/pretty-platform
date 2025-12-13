@@ -1,7 +1,8 @@
 package com.pretty.platform.catalog.application.internal.queryservices;
 
-import com.pretty.platform.catalog.domain.model.queries.GetAllProductsQuery;
 import com.pretty.platform.catalog.domain.model.queries.GetProductByIdQuery;
+import com.pretty.platform.catalog.domain.model.queries.GetProductsByCategoryAndTagQuery;
+import com.pretty.platform.catalog.domain.model.queries.GetProductsByNameQuery;
 import com.pretty.platform.catalog.domain.services.ProductQueryService;
 import com.pretty.platform.catalog.infrastructure.persistence.jpa.repositories.ProductRepository;
 import com.pretty.platform.shared.domain.model.aggregates.Product;
@@ -30,7 +31,34 @@ public class ProductQueryServiceImpl implements ProductQueryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Product> handle(GetAllProductsQuery query) {
-        return productRepository.findAll();
+    public List<Product> handle(GetProductsByCategoryAndTagQuery query) {
+        String category = query.category();
+        String tag = query.tag();
+
+        if (category != null && tag != null) {
+            return productRepository.findByCategoryNameAndTagName(category, tag);
+        } else if (category != null) {
+            return productRepository.findByCategoryNameOnly(category);
+        } else {
+            return productRepository.findByTagNameOnly(tag);
+        }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Product> handle(GetProductsByNameQuery query) {
+        return productRepository.findByTitleContaining(query.searchTerm());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getAllTags() {
+        return productRepository.findAllDistinctTags();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> getAllCategories() {
+        return productRepository.findAllDistinctCategories();
     }
 }

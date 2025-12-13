@@ -25,9 +25,6 @@ public record ProductResource(
     @Schema(description = "Product categories", example = "[\"Electronics\", \"Audio\"]")
     List<String> categories,
 
-    @Schema(description = "Product subcategories", example = "[\"Headphones\", \"Wireless\"]")
-    List<String> subcategories,
-
     @Schema(description = "Product tags", example = "[\"wireless\", \"bluetooth\"]")
     List<String> tags,
 

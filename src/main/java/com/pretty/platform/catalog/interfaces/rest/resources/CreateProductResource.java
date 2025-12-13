@@ -23,9 +23,6 @@ public record CreateProductResource(
     @Schema(description = "Product categories", example = "[\"Electronics\", \"Audio\"]")
     List<@NotBlank String> categories,
 
-    @Schema(description = "Product subcategories", example = "[\"Headphones\", \"Wireless\"]")
-    List<@NotBlank String> subcategories,
-
     @Schema(description = "Product tags", example = "[\"wireless\", \"bluetooth\"]")
     List<@NotBlank String> tags,
 

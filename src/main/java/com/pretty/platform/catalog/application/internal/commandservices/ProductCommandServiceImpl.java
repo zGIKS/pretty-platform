@@ -30,11 +30,10 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         var description = new ProductDescription(command.description());
         var brand = new Brand(command.brand());
         var categories = command.categories().stream().map(Category::new).collect(Collectors.toList());
-        var subcategories = command.subcategories().stream().map(Subcategory::new).collect(Collectors.toList());
         var tags = command.tags().stream().map(Tag::new).collect(Collectors.toList());
         var imageUrls = command.imageUrls().stream().map(ImageUrl::new).collect(Collectors.toList());
 
-        var product = new Product(title, description, brand, categories, subcategories, tags, imageUrls);
+        var product = new Product(title, description, brand, categories, tags, imageUrls);
         var savedProduct = productRepository.save(product);
         return Optional.of(savedProduct.getId());
     }

@@ -30,10 +30,6 @@ public class Product {
     private List<Category> categories;
 
     @ElementCollection
-    @CollectionTable(name = "product_subcategories", joinColumns = @JoinColumn(name = "product_id"))
-    private List<Subcategory> subcategories;
-
-    @ElementCollection
     @CollectionTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"))
     private List<Tag> tags;
 
@@ -49,12 +45,11 @@ public class Product {
 
     protected Product() {}
 
-    public Product(ProductTitle title, ProductDescription description, Brand brand, List<Category> categories, List<Subcategory> subcategories, List<Tag> tags, List<ImageUrl> imageUrls) {
+    public Product(ProductTitle title, ProductDescription description, Brand brand, List<Category> categories, List<Tag> tags, List<ImageUrl> imageUrls) {
         this.title = title;
         this.description = description;
         this.brand = brand;
         this.categories = categories;
-        this.subcategories = subcategories;
         this.tags = tags;
         this.imageUrls = imageUrls;
         this.createdAt = LocalDateTime.now();
@@ -67,7 +62,6 @@ public class Product {
     public ProductDescription getDescription() { return description; }
     public Brand getBrand() { return brand; }
     public List<Category> getCategories() { return categories; }
-    public List<Subcategory> getSubcategories() { return subcategories; }
     public List<Tag> getTags() { return tags; }
     public List<ImageUrl> getImageUrls() { return imageUrls; }
     public LocalDateTime getCreatedAt() { return createdAt; }
