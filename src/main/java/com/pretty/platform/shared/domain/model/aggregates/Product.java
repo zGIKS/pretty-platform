@@ -30,16 +30,19 @@ public class Product {
     private List<Category> categories;
 
     @ElementCollection
-    @CollectionTable(name = "product_subcategories", joinColumns = @JoinColumn(name = "product_id"))
-    private List<Subcategory> subcategories;
-
-    @ElementCollection
     @CollectionTable(name = "product_tags", joinColumns = @JoinColumn(name = "product_id"))
     private List<Tag> tags;
 
     @ElementCollection
     @CollectionTable(name = "product_images", joinColumns = @JoinColumn(name = "product_id"))
     private List<ImageUrl> imageUrls;
+
+    @Embedded
+    @AttributeOverrides({
+        @AttributeOverride(name = "amount", column = @Column(name = "price_amount")),
+        @AttributeOverride(name = "currency", column = @Column(name = "price_currency"))
+    })
+    private Price price;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -49,14 +52,17 @@ public class Product {
 
     protected Product() {}
 
-    public Product(ProductTitle title, ProductDescription description, Brand brand, List<Category> categories, List<Subcategory> subcategories, List<Tag> tags, List<ImageUrl> imageUrls) {
+    public Product(ProductTitle title, ProductDescription description, Brand brand, List<Category> categories, List<Tag> tags, List<ImageUrl> imageUrls, Price price) {
+        if (price == null) {
+            throw new IllegalArgumentException("Price cannot be null");
+        }
         this.title = title;
         this.description = description;
         this.brand = brand;
         this.categories = categories;
-        this.subcategories = subcategories;
         this.tags = tags;
         this.imageUrls = imageUrls;
+        this.price = price;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -67,9 +73,9 @@ public class Product {
     public ProductDescription getDescription() { return description; }
     public Brand getBrand() { return brand; }
     public List<Category> getCategories() { return categories; }
-    public List<Subcategory> getSubcategories() { return subcategories; }
     public List<Tag> getTags() { return tags; }
     public List<ImageUrl> getImageUrls() { return imageUrls; }
+    public Price getPrice() { return price; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 

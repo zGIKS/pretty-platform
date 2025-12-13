@@ -18,21 +18,17 @@ public class UserService {
     @Transactional
     public User processOAuthPostLogin(OAuth2User oAuth2User) {
         String email = oAuth2User.getAttribute("email");
-        String googleId = oAuth2User.getAttribute("sub");
         String name = oAuth2User.getAttribute("name");
         String pictureUrl = oAuth2User.getAttribute("picture");
-        Boolean emailVerified = oAuth2User.getAttribute("email_verified");
 
-        return userRepository.findByGoogleId(googleId)
+        return userRepository.findByEmail(email)
                 .map(existingUser -> {
                     existingUser.setName(name);
-                    existingUser.setEmail(email);
                     existingUser.setPictureUrl(pictureUrl);
-                    existingUser.setEmailVerified(emailVerified);
                     return userRepository.save(existingUser);
                 })
                 .orElseGet(() -> {
-                    User newUser = new User(name, email, googleId, pictureUrl, emailVerified);
+                    User newUser = new User(name, email, pictureUrl);
                     return userRepository.save(newUser);
                 });
     }

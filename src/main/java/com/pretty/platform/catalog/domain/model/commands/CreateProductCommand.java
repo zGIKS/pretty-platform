@@ -1,5 +1,6 @@
 package com.pretty.platform.catalog.domain.model.commands;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -10,9 +11,10 @@ public record CreateProductCommand(
     String description,
     String brand,
     List<String> categories,
-    List<String> subcategories,
     List<String> tags,
-    List<String> imageUrls
+    List<String> imageUrls,
+    BigDecimal price,
+    String currency
 ) {
     public CreateProductCommand {
         if (title == null || title.trim().isEmpty()) {
@@ -21,11 +23,11 @@ public record CreateProductCommand(
         if (brand == null || brand.trim().isEmpty()) {
             throw new IllegalArgumentException("Brand is required");
         }
+        if (price == null || price.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("Price is required and must be non-negative");
+        }
         if (categories == null) {
             categories = List.of();
-        }
-        if (subcategories == null) {
-            subcategories = List.of();
         }
         if (tags == null) {
             tags = List.of();

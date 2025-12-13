@@ -2,6 +2,7 @@ package com.pretty.platform.catalog.interfaces.rest.resources;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -23,12 +24,17 @@ public record CreateProductResource(
     @Schema(description = "Product categories", example = "[\"Electronics\", \"Audio\"]")
     List<@NotBlank String> categories,
 
-    @Schema(description = "Product subcategories", example = "[\"Headphones\", \"Wireless\"]")
-    List<@NotBlank String> subcategories,
-
     @Schema(description = "Product tags", example = "[\"wireless\", \"bluetooth\"]")
     List<@NotBlank String> tags,
 
     @Schema(description = "Product image URLs", example = "[\"https://example.com/image1.jpg\"]")
-    List<@NotBlank String> imageUrls
+    List<@NotBlank String> imageUrls,
+
+    @Schema(description = "Product price", example = "299.99", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "Price is required")
+    @DecimalMin(value = "0.0", inclusive = true, message = "Price must be non-negative")
+    BigDecimal price,
+
+    @Schema(description = "Price currency code", example = "USD", defaultValue = "USD")
+    String currency
 ) {}

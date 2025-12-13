@@ -10,8 +10,7 @@ public class UserResourceFromEntityAssembler {
             user.getId(),
             user.getName(),
             user.getEmail(),
-            user.getPictureUrl(),
-            user.getEmailVerified()
+            user.getPictureUrl()
         );
     }
 }
