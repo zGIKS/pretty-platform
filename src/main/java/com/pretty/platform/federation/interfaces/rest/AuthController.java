@@ -1,11 +1,18 @@
 package com.pretty.platform.federation.interfaces.rest;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -19,6 +26,10 @@ public class AuthController {
 
     @GetMapping("/user")
     @Operation(summary = "Get Current User", description = "Get information about the currently authenticated user")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "User information retrieved successfully"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated")
+    })
     public ResponseEntity<Map<String, Object>> getCurrentUser(@AuthenticationPrincipal OAuth2User principal) {
         if (principal == null) {
             return ResponseEntity.status(401).build();
@@ -32,5 +43,25 @@ public class AuthController {
         userInfo.put("sub", principal.getAttribute("sub"));
 
         return ResponseEntity.ok(userInfo);
+    }
+
+    @PostMapping("/logout")
+    @Operation(summary = "Logout", description = "Logout the current user and invalidate the session")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Logout successful"),
+        @ApiResponse(responseCode = "401", description = "User not authenticated")
+    })
+    public ResponseEntity<Map<String, String>> logout(HttpServletRequest request,
+                                                       HttpServletResponse response,
+                                                       Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body(Map.of("message", "User not authenticated"));
+        }
+
+        new SecurityContextLogoutHandler().logout(request, response, authentication);
+
+        Map<String, String> result = new HashMap<>();
+        result.put("message", "Logout successful");
+        return ResponseEntity.ok(result);
     }
 }
