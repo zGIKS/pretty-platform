@@ -39,8 +39,6 @@ public class AuthController {
         userInfo.put("name", principal.getAttribute("name"));
         userInfo.put("email", principal.getAttribute("email"));
         userInfo.put("picture", principal.getAttribute("picture"));
-        userInfo.put("email_verified", principal.getAttribute("email_verified"));
-        userInfo.put("sub", principal.getAttribute("sub"));
 
         return ResponseEntity.ok(userInfo);
     }

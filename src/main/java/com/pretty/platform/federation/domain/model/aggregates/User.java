@@ -18,14 +18,8 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(name = "google_id", unique = true)
-    private String googleId;
-
     @Column(name = "picture_url")
     private String pictureUrl;
-
-    @Column(name = "email_verified")
-    private Boolean emailVerified;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
@@ -36,12 +30,10 @@ public class User {
     protected User() {
     }
 
-    public User(String name, String email, String googleId, String pictureUrl, Boolean emailVerified) {
+    public User(String name, String email, String pictureUrl) {
         this.name = name;
         this.email = email;
-        this.googleId = googleId;
         this.pictureUrl = pictureUrl;
-        this.emailVerified = emailVerified;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -50,9 +42,7 @@ public class User {
     public UUID getId() { return id; }
     public String getName() { return name; }
     public String getEmail() { return email; }
-    public String getGoogleId() { return googleId; }
     public String getPictureUrl() { return pictureUrl; }
-    public Boolean getEmailVerified() { return emailVerified; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
 
@@ -69,11 +59,6 @@ public class User {
 
     public void setPictureUrl(String pictureUrl) {
         this.pictureUrl = pictureUrl;
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    public void setEmailVerified(Boolean emailVerified) {
-        this.emailVerified = emailVerified;
         this.updatedAt = LocalDateTime.now();
     }
 }

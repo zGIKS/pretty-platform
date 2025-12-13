@@ -6,7 +6,6 @@ public record UserResource(
     UUID id,
     String name,
     String email,
-    String pictureUrl,
-    Boolean emailVerified
+    String pictureUrl
 ) {
 }
