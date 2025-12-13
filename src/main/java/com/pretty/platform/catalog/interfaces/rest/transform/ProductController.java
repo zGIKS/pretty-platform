@@ -53,7 +53,9 @@ public class ProductController {
             resource.brand(),
             resource.categories(),
             resource.tags(),
-            resource.imageUrls()
+            resource.imageUrls(),
+            resource.price(),
+            resource.currency()
         );
         var productId = productCommandService.handle(command);
         return productId.map(id -> ResponseEntity.status(HttpStatus.CREATED).body(id))
@@ -141,6 +143,8 @@ public class ProductController {
             product.getCategories().stream().map(Category::name).collect(Collectors.toList()),
             product.getTags().stream().map(Tag::name).collect(Collectors.toList()),
             product.getImageUrls().stream().map(ImageUrl::url).collect(Collectors.toList()),
+            product.getPrice() != null ? product.getPrice().amount() : null,
+            product.getPrice() != null ? product.getPrice().currency() : null,
             product.getCreatedAt(),
             product.getUpdatedAt()
         );

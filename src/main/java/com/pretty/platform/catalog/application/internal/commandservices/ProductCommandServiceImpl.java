@@ -33,7 +33,13 @@ public class ProductCommandServiceImpl implements ProductCommandService {
         var tags = command.tags().stream().map(Tag::new).collect(Collectors.toList());
         var imageUrls = command.imageUrls().stream().map(ImageUrl::new).collect(Collectors.toList());
 
-        var product = new Product(title, description, brand, categories, tags, imageUrls);
+        // Handle price with default currency if not provided
+        var currency = (command.currency() == null || command.currency().trim().isEmpty())
+                       ? "USD"
+                       : command.currency();
+        var price = new Price(command.price(), currency);
+
+        var product = new Product(title, description, brand, categories, tags, imageUrls, price);
         var savedProduct = productRepository.save(product);
         return Optional.of(savedProduct.getId());
     }

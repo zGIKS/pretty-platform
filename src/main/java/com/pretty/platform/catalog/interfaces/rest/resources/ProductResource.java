@@ -1,6 +1,7 @@
 package com.pretty.platform.catalog.interfaces.rest.resources;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -30,6 +31,12 @@ public record ProductResource(
 
     @Schema(description = "Product image URLs", example = "[\"https://example.com/image1.jpg\"]")
     List<String> imageUrls,
+
+    @Schema(description = "Product price", example = "299.99")
+    BigDecimal price,
+
+    @Schema(description = "Price currency code", example = "USD")
+    String currency,
 
     @Schema(description = "Creation timestamp")
     LocalDateTime createdAt,
