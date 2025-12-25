@@ -1,42 +1,78 @@
-# Demo Spring Boot Project with Swagger
+# Swagger Axum API
 
-This is a simple Spring Boot application with Swagger/OpenAPI documentation.
+A simple API built with Axum and Rust that provides a "Hello World" endpoint with Swagger documentation.
 
-## Prerequisites
+## Features
 
-- Java 17 or higher
-- Maven 3.6 or higher
+- GET /hello endpoint that returns "Hello World"
+- Automatic documentation with Swagger UI
+- Port configuration through environment variables
+- Asynchronous web server with Tokio
 
-## Running the Application
+## Requirements
 
-1. Clone or navigate to the project directory.
+- Rust 1.70 or higher
+- Cargo
 
-2. Run the following command to start the application:
+## Installation
 
+1. Clone the repository:
    ```bash
-   mvn spring-boot:run
+   git clone <repository-url>
+   cd pretty-platform
    ```
 
-3. Open your browser and go to `http://localhost:8082/swagger-ui/index.html` to access the Swagger UI (OpenAPI docs are also available at `http://localhost:8082/api-docs`).
-
-4. You can test the `/hello` endpoint from the Swagger UI.
-
-## API Endpoints
-
-- `GET /hello` - Returns a "Hello, World!" message.
+2. Install dependencies:
+   ```bash
+   cargo build
+   ```
 
 ## Configuration
 
-- `server.port=8082` – change the port if needed.
-- `springdoc.api-docs.path=/api-docs` – OpenAPI JSON path consumed by Swagger UI.
-- `springdoc.swagger-ui.path=/swagger-ui.html` – entry point for the UI (also reachable via `/swagger-ui/index.html`).
+Create a `.env` file in the project root:
 
-## Building the Project
-
-To build the project, run:
-
-```bash
-mvn clean install
+```
+PORT=3000
 ```
 
-This will create a JAR file in the `target` directory that you can run with `java -jar target/pretty-0.0.1-SNAPSHOT.jar`.
+If not specified, the default port is 3000.
+
+## Running
+
+```bash
+cargo run
+```
+
+The server will start at `http://localhost:<PORT>`.
+
+## API Endpoints
+
+### GET /hello
+
+Returns a "Hello World" message.
+
+**Response:**
+- 200 OK: "Hello World"
+
+## Swagger Documentation
+
+Access the interactive documentation at: `http://localhost:<PORT>/swagger-ui`
+
+## Dependencies
+
+- `axum`: Web framework for Rust
+- `tokio`: Asynchronous runtime
+- `utoipa`: OpenAPI generation
+- `utoipa-swagger-ui`: Swagger UI interface
+- `dotenvy`: Environment variable loading
+
+## Project Structure
+
+```
+.
+├── Cargo.toml          # Rust project configuration
+├── .env                # Environment variables
+├── src/
+│   └── main.rs         # Main application code
+└── README.md           # This documentation
+```
