@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"strconv"
+
 	"go-service/internal/products/domain/model/commands"
 	"go-service/internal/products/domain/model/entities"
 	"go-service/internal/products/domain/model/queries"
@@ -101,7 +103,19 @@ func (c *ProductController) GetProduct(ctx *fiber.Ctx) error {
 // @Router /products [get]
 func (c *ProductController) GetAllProducts(ctx *fiber.Ctx) error {
 	query := queries.NewGetAllProductsQuery()
-	// Add pagination if needed
+
+	// Parse and apply pagination parameters
+	if limitStr := ctx.Query("limit"); limitStr != "" {
+		if limit, err := strconv.Atoi(limitStr); err == nil && limit > 0 {
+			if offsetStr := ctx.Query("offset"); offsetStr != "" {
+				if offset, err := strconv.Atoi(offsetStr); err == nil && offset >= 0 {
+					query = query.WithPagination(limit, offset)
+				}
+			} else {
+				query = query.WithPagination(limit, 0)
+			}
+		}
+	}
 
 	products, err := c.queryService.HandleGetAll(ctx.Context(), query)
 	if err != nil {
