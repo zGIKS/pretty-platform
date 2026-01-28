@@ -10,11 +10,16 @@ import (
 )
 
 type Config struct {
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
+	DBHost                  string
+	DBPort                  string
+	DBUser                  string
+	DBPassword              string
+	DBName                  string
+	DefaultCurrency         string
+	MercadoPagoPublicKey    string
+	MercadoPagoAccessToken  string
+	FrontendBaseURL         string
+	PaymentsNotificationURL string
 }
 
 func LoadConfig() *Config {
@@ -23,11 +28,16 @@ func LoadConfig() *Config {
 	}
 
 	cfg := &Config{
-		DBHost:     getEnv("DB_HOST", ""),
-		DBPort:     getEnv("DB_PORT", ""),
-		DBUser:     getEnv("DB_USER", ""),
-		DBPassword: getEnv("DB_PASSWORD", ""),
-		DBName:     getEnv("DB_NAME", ""),
+		DBHost:                  getEnv("DB_HOST", ""),
+		DBPort:                  getEnv("DB_PORT", ""),
+		DBUser:                  getEnv("DB_USER", ""),
+		DBPassword:              getEnv("DB_PASSWORD", ""),
+		DBName:                  getEnv("DB_NAME", ""),
+		DefaultCurrency:         getEnv("DEFAULT_CURRENCY", "ARS"),
+		MercadoPagoPublicKey:    getEnv("MERCADO_PAGO_PUBLIC_KEY", ""),
+		MercadoPagoAccessToken:  getEnv("MERCADO_PAGO_ACCESS_TOKEN", ""),
+		FrontendBaseURL:         getEnv("FRONTEND_BASE_URL", "http://localhost:5173"),
+		PaymentsNotificationURL: getEnv("PAYMENTS_NOTIFICATION_URL", ""),
 	}
 
 	// Validate required fields
@@ -45,6 +55,12 @@ func LoadConfig() *Config {
 	}
 	if cfg.DBName == "" {
 		log.Fatal("DB_NAME is required")
+	}
+	if cfg.MercadoPagoPublicKey == "" {
+		log.Fatal("MERCADO_PAGO_PUBLIC_KEY is required")
+	}
+	if cfg.MercadoPagoAccessToken == "" {
+		log.Fatal("MERCADO_PAGO_ACCESS_TOKEN is required")
 	}
 
 	return cfg

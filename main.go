@@ -4,10 +4,17 @@ import (
 	"fmt"
 	"go-service/docs"
 	"go-service/internal/config"
+	paymentsCommandServices "go-service/internal/payments/application/commandservices"
+	paymentsQueryServices "go-service/internal/payments/application/queryservices"
+	paymentEntities "go-service/internal/payments/domain/model/entities"
+	"go-service/internal/payments/infrastructure/mercadopago"
+	paymentRepositories "go-service/internal/payments/infrastructure/persistence/repositories"
+	paymentControllers "go-service/internal/payments/interfaces/rest/controllers"
 	"go-service/internal/products/application/commandservices"
 	"go-service/internal/products/application/queryservices"
-	"go-service/internal/products/domain/model/entities"
+	productEntities "go-service/internal/products/domain/model/entities"
 	"go-service/internal/products/infrastructure/persistence/repositories"
+	productacl "go-service/internal/products/interfaces/acl"
 	"go-service/internal/products/interfaces/rest/controllers"
 	"os"
 
@@ -36,13 +43,20 @@ func main() {
 	db := config.InitDB(cfg)
 
 	// Auto migrate
-	db.AutoMigrate(&entities.Product{})
+	db.AutoMigrate(&productEntities.Product{}, &paymentEntities.Payment{})
 
 	// Wire dependencies
 	productRepo := repositories.NewProductRepository(db)
 	productCommandService := commandservices.NewProductCommandService(productRepo)
 	productQueryService := queryservices.NewProductQueryService(productRepo)
 	productController := controllers.NewProductController(productCommandService, productQueryService)
+	productPaymentsFacade := productacl.NewProductPaymentFacade(productQueryService, cfg.DefaultCurrency)
+
+	paymentRepo := paymentRepositories.NewPaymentRepository(db)
+	mpClient := mercadopago.NewClient(cfg.MercadoPagoAccessToken, cfg.MercadoPagoPublicKey)
+	paymentCommandService := paymentsCommandServices.NewPaymentCommandService(paymentRepo, mpClient, productPaymentsFacade, cfg.FrontendBaseURL, cfg.PaymentsNotificationURL)
+	paymentQueryService := paymentsQueryServices.NewPaymentQueryService(paymentRepo)
+	paymentController := paymentControllers.NewPaymentController(paymentCommandService, paymentQueryService, mpClient)
 
 	app := fiber.New()
 
@@ -52,6 +66,8 @@ func main() {
 	app.Get("/products/:id", productController.GetProduct)
 	app.Put("/products/:id", productController.UpdateProduct)
 	app.Delete("/products/:id", productController.DeleteProduct)
+	app.Post("/payments", paymentController.CreatePayment)
+	app.Get("/payments/:id", paymentController.GetPayment)
 
 	app.Get("/swagger-ui/*", fiberSwagger.WrapHandler)
 

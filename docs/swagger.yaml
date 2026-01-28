@@ -1,5 +1,34 @@
 basePath: /
 definitions:
+  go-service_internal_payments_interfaces_rest_resources.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+  go-service_internal_products_interfaces_rest_resources.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+  resources.CreatePaymentResource:
+    properties:
+      payer_email:
+        example: buyer@example.com
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      quantity:
+        example: 1
+        minimum: 1
+        type: integer
+    required:
+    - payer_email
+    - product_id
+    - quantity
+    type: object
   resources.CreateProductResource:
     properties:
       category:
@@ -32,10 +61,70 @@ definitions:
     - quantity
     - title
     type: object
-  resources.ErrorResponse:
+  resources.PaymentCreationResponse:
     properties:
-      error:
-        example: error message
+      amount:
+        example: 199.99
+        type: number
+      currency:
+        example: ARS
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      preference_id:
+        example: "123456"
+        type: string
+      preference_url:
+        example: https://www.mercadopago.com/checkout/v1/redirect?pref_id=123
+        type: string
+      product_title:
+        example: Special Product
+        type: string
+      public_key:
+        example: APP_USR-xxxxxxxx
+        type: string
+      quantity:
+        example: 1
+        type: integer
+      status:
+        example: pending
+        type: string
+    type: object
+  resources.PaymentResource:
+    properties:
+      amount:
+        example: 199.99
+        type: number
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      currency:
+        example: ARS
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      preference_id:
+        example: "123456789"
+        type: string
+      preference_url:
+        example: https://www.mercadopago.com/checkout/v1/redirect?pref_id=123
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      product_title:
+        example: Special Product
+        type: string
+      quantity:
+        example: 1
+        type: integer
+      status:
+        example: pending
+        type: string
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
         type: string
     type: object
   resources.ProductResource:
@@ -112,6 +201,63 @@ info:
   title: Products API
   version: "1.0"
 paths:
+  /payments:
+    post:
+      consumes:
+      - application/json
+      description: Creates a Mercado Pago checkout preference tied to a product
+      parameters:
+      - description: Payment creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/resources.CreatePaymentResource'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/resources.PaymentCreationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+      summary: Create a payment preference
+      tags:
+      - payments
+  /payments/{id}:
+    get:
+      description: Retrieve payment and preference details
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/resources.PaymentResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+      summary: Get payment by ID
+      tags:
+      - payments
   /products:
     get:
       description: Retrieve all products with optional pagination
@@ -157,11 +303,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
       summary: Create a new product
       tags:
       - products
@@ -180,11 +326,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
       summary: Delete product
       tags:
       - products
@@ -206,11 +352,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
       summary: Get product by ID
       tags:
       - products
@@ -240,11 +386,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            $ref: '#/definitions/resources.ErrorResponse'
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
       summary: Update product
       tags:
       - products

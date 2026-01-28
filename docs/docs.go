@@ -15,6 +15,93 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/payments": {
+            "post": {
+                "description": "Creates a Mercado Pago checkout preference tied to a product",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Create a payment preference",
+                "parameters": [
+                    {
+                        "description": "Payment creation request",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/resources.CreatePaymentResource"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/resources.PaymentCreationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/payments/{id}": {
+            "get": {
+                "description": "Retrieve payment and preference details",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payments"
+                ],
+                "summary": "Get payment by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/resources.PaymentResource"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/products": {
             "get": {
                 "description": "Retrieve all products with optional pagination",
@@ -84,13 +171,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     }
                 }
@@ -125,13 +212,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     }
                 }
@@ -176,13 +263,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     }
                 }
@@ -209,13 +296,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/resources.ErrorResponse"
+                            "$ref": "#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse"
                         }
                     }
                 }
@@ -223,6 +310,47 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "go-service_internal_payments_interfaces_rest_resources.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "error message"
+                }
+            }
+        },
+        "go-service_internal_products_interfaces_rest_resources.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "error message"
+                }
+            }
+        },
+        "resources.CreatePaymentResource": {
+            "type": "object",
+            "required": [
+                "payer_email",
+                "product_id",
+                "quantity"
+            ],
+            "properties": {
+                "payer_email": {
+                    "type": "string",
+                    "example": "buyer@example.com"
+                },
+                "product_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "example": 1
+                }
+            }
+        },
         "resources.CreateProductResource": {
             "type": "object",
             "required": [
@@ -264,12 +392,93 @@ const docTemplate = `{
                 }
             }
         },
-        "resources.ErrorResponse": {
+        "resources.PaymentCreationResponse": {
             "type": "object",
             "properties": {
-                "error": {
+                "amount": {
+                    "type": "number",
+                    "example": 199.99
+                },
+                "currency": {
                     "type": "string",
-                    "example": "error message"
+                    "example": "ARS"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "preference_id": {
+                    "type": "string",
+                    "example": "123456"
+                },
+                "preference_url": {
+                    "type": "string",
+                    "example": "https://www.mercadopago.com/checkout/v1/redirect?pref_id=123"
+                },
+                "product_title": {
+                    "type": "string",
+                    "example": "Special Product"
+                },
+                "public_key": {
+                    "type": "string",
+                    "example": "APP_USR-xxxxxxxx"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                }
+            }
+        },
+        "resources.PaymentResource": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "example": 199.99
+                },
+                "created_at": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
+                },
+                "currency": {
+                    "type": "string",
+                    "example": "ARS"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "preference_id": {
+                    "type": "string",
+                    "example": "123456789"
+                },
+                "preference_url": {
+                    "type": "string",
+                    "example": "https://www.mercadopago.com/checkout/v1/redirect?pref_id=123"
+                },
+                "product_id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "product_title": {
+                    "type": "string",
+                    "example": "Special Product"
+                },
+                "quantity": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "status": {
+                    "type": "string",
+                    "example": "pending"
+                },
+                "updated_at": {
+                    "type": "string",
+                    "example": "2024-01-01T00:00:00Z"
                 }
             }
         },
