@@ -260,7 +260,7 @@ paths:
       - payments
   /products:
     get:
-      description: Retrieve all products with optional pagination
+      description: Retrieve all products with optional pagination and category filter
       parameters:
       - description: Limit
         in: query
@@ -270,6 +270,10 @@ paths:
         in: query
         name: offset
         type: integer
+      - description: Category filter (URL encoded for spaces, e.g., 'Cuidado%20de%20la%20piel')
+        in: query
+        name: category
+        type: string
       produces:
       - application/json
       responses:

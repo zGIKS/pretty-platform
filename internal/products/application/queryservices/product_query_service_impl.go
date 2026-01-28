@@ -30,3 +30,7 @@ func (s *productQueryServiceImpl) HandleFindByID(ctx context.Context, query quer
 func (s *productQueryServiceImpl) HandleGetAll(ctx context.Context, query queries.GetAllProductsQuery) ([]*entities.Product, error) {
 	return s.productRepo.FindAll(ctx, query.Limit(), query.Offset())
 }
+
+func (s *productQueryServiceImpl) HandleFindByCategory(ctx context.Context, query queries.FindProductsByCategoryQuery) ([]*entities.Product, error) {
+	return s.productRepo.FindByCategory(ctx, query.Category(), query.Limit(), query.Offset())
+}

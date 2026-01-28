@@ -9,4 +9,5 @@ import (
 type ProductQueryService interface {
 	HandleFindByID(ctx context.Context, query queries.FindProductByIDQuery) (*entities.Product, error)
 	HandleGetAll(ctx context.Context, query queries.GetAllProductsQuery) ([]*entities.Product, error)
+	HandleFindByCategory(ctx context.Context, query queries.FindProductsByCategoryQuery) ([]*entities.Product, error)
 }

@@ -94,30 +94,57 @@ func (c *ProductController) GetProduct(ctx *fiber.Ctx) error {
 }
 
 // @Summary Get all products
-// @Description Retrieve all products with optional pagination
+// @Description Retrieve all products with optional pagination and category filter
 // @Tags products
 // @Produce json
 // @Param limit query int false "Limit"
 // @Param offset query int false "Offset"
+// @Param category query string false "Category filter (URL encoded for spaces, e.g., 'Cuidado%20de%20la%20piel')"
 // @Success 200 {array} resources.ProductResource
 // @Router /products [get]
 func (c *ProductController) GetAllProducts(ctx *fiber.Ctx) error {
-	query := queries.NewGetAllProductsQuery()
+	categoryParam := ctx.Query("category")
 
-	// Parse and apply pagination parameters
+	// Parse pagination parameters
+	var limit, offset *int
 	if limitStr := ctx.Query("limit"); limitStr != "" {
-		if limit, err := strconv.Atoi(limitStr); err == nil && limit > 0 {
-			if offsetStr := ctx.Query("offset"); offsetStr != "" {
-				if offset, err := strconv.Atoi(offsetStr); err == nil && offset >= 0 {
-					query = query.WithPagination(limit, offset)
-				}
-			} else {
-				query = query.WithPagination(limit, 0)
-			}
+		if l, err := strconv.Atoi(limitStr); err == nil && l > 0 {
+			limit = &l
+		}
+	}
+	if offsetStr := ctx.Query("offset"); offsetStr != "" {
+		if o, err := strconv.Atoi(offsetStr); err == nil && o >= 0 {
+			offset = &o
 		}
 	}
 
-	products, err := c.queryService.HandleGetAll(ctx.Context(), query)
+	var products []*entities.Product
+	var err error
+
+	if categoryParam != "" {
+		// Filter by category
+		query, _ := queries.NewFindProductsByCategoryQuery(categoryParam)
+		if limit != nil {
+			if offset != nil {
+				query = query.WithPagination(*limit, *offset)
+			} else {
+				query = query.WithPagination(*limit, 0)
+			}
+		}
+		products, err = c.queryService.HandleFindByCategory(ctx.Context(), query)
+	} else {
+		// Get all products
+		query := queries.NewGetAllProductsQuery()
+		if limit != nil {
+			if offset != nil {
+				query = query.WithPagination(*limit, *offset)
+			} else {
+				query = query.WithPagination(*limit, 0)
+			}
+		}
+		products, err = c.queryService.HandleGetAll(ctx.Context(), query)
+	}
+
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: err.Error()})
 	}

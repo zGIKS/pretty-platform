@@ -104,7 +104,7 @@ const docTemplate = `{
         },
         "/products": {
             "get": {
-                "description": "Retrieve all products with optional pagination",
+                "description": "Retrieve all products with optional pagination and category filter",
                 "produces": [
                     "application/json"
                 ],
@@ -123,6 +123,12 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Offset",
                         "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category filter (URL encoded for spaces, e.g., 'Cuidado%20de%20la%20piel')",
+                        "name": "category",
                         "in": "query"
                     }
                 ],

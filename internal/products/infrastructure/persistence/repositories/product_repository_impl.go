@@ -43,6 +43,19 @@ func (r *productRepositoryImpl) FindAll(ctx context.Context, limit, offset *int)
 	return products, err
 }
 
+func (r *productRepositoryImpl) FindByCategory(ctx context.Context, category string, limit, offset *int) ([]*entities.Product, error) {
+	var products []*entities.Product
+	query := r.db.WithContext(ctx).Where("category = ?", category)
+	if limit != nil {
+		query = query.Limit(*limit)
+	}
+	if offset != nil {
+		query = query.Offset(*offset)
+	}
+	err := query.Find(&products).Error
+	return products, err
+}
+
 func (r *productRepositoryImpl) Delete(ctx context.Context, id valueobjects.ProductID) error {
 	return r.db.WithContext(ctx).Where("id = ?", id.Value()).Delete(&entities.Product{}).Error
 }
