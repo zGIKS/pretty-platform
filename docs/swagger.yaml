@@ -1,24 +1,251 @@
 basePath: /
+definitions:
+  resources.CreateProductResource:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      description:
+        example: Product description
+        maxLength: 1000
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      price:
+        example: 99.99
+        minimum: 0
+        type: number
+      quantity:
+        example: 10
+        minimum: 0
+        type: integer
+      title:
+        example: Product Title
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - category
+    - image_url
+    - price
+    - quantity
+    - title
+    type: object
+  resources.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+  resources.ProductResource:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Product description
+        maxLength: 1000
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      price:
+        example: 99.99
+        minimum: 0
+        type: number
+      quantity:
+        example: 10
+        minimum: 0
+        type: integer
+      title:
+        example: Product Title
+        maxLength: 255
+        minLength: 1
+        type: string
+      updated_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    required:
+    - category
+    - image_url
+    - price
+    - quantity
+    - title
+    type: object
+  resources.UpdateProductResource:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      description:
+        example: Product description
+        maxLength: 1000
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      price:
+        example: 99.99
+        minimum: 0
+        type: number
+      quantity:
+        example: 10
+        minimum: 0
+        type: integer
+      title:
+        example: Product Title
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
 host: localhost:3000
 info:
   contact: {}
-  description: This is a sample server.
-  title: Hello World API
+  description: This is a products management API.
+  title: Products API
   version: "1.0"
 paths:
-  /hello:
+  /products:
     get:
-      consumes:
-      - application/json
-      description: get hello world
+      description: Retrieve all products with optional pagination
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: hello world
+          description: OK
           schema:
-            type: string
-      summary: Get hello world
+            items:
+              $ref: '#/definitions/resources.ProductResource'
+            type: array
+      summary: Get all products
       tags:
-      - hello
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product with the provided details
+      parameters:
+      - description: Product creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/resources.CreateProductResource'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/resources.ProductResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+      summary: Create a new product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      description: Delete a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+      summary: Delete product
+      tags:
+      - products
+    get:
+      description: Retrieve a product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/resources.ProductResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+      summary: Get product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/resources.UpdateProductResource'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/resources.ProductResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/resources.ErrorResponse'
+      summary: Update product
+      tags:
+      - products
 swagger: "2.0"
