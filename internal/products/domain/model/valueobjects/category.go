@@ -3,7 +3,7 @@ package valueobjects
 import "errors"
 
 type Category struct {
-	value string `json:"value" gorm:"column:category"`
+	value string `gorm:"column:category"`
 }
 
 func NewCategory(value string) (Category, error) {

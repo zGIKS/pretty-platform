@@ -6,7 +6,7 @@ import (
 )
 
 type Price struct {
-	value float64 `json:"value" gorm:"column:price"`
+	value float64 `gorm:"column:price"`
 }
 
 func NewPrice(value float64) (Price, error) {

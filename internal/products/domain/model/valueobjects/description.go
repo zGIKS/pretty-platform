@@ -3,7 +3,7 @@ package valueobjects
 import "errors"
 
 type Description struct {
-	value string `json:"value" gorm:"column:description"`
+	value string `gorm:"column:description"`
 }
 
 func NewDescription(value string) (Description, error) {

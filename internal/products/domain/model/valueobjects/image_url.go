@@ -6,7 +6,7 @@ import (
 )
 
 type ImageURL struct {
-	value string `json:"value" gorm:"column:image_url"`
+	value string `gorm:"column:image_url"`
 }
 
 func NewImageURL(value string) (ImageURL, error) {

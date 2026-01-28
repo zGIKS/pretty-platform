@@ -7,7 +7,7 @@ import (
 )
 
 type ProductID struct {
-	value uuid.UUID `json:"value" gorm:"type:uuid;column:product_id"`
+	value uuid.UUID `gorm:"type:uuid;column:product_id"`
 }
 
 func NewProductID(value string) (ProductID, error) {

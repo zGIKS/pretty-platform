@@ -6,7 +6,7 @@ import (
 )
 
 type Quantity struct {
-	value int `json:"value" gorm:"column:quantity"`
+	value int `gorm:"column:quantity"`
 }
 
 func NewQuantity(value int) (Quantity, error) {
