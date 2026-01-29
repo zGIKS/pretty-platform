@@ -1,0 +1,401 @@
+basePath: /api/v1
+definitions:
+  go-service_internal_payments_interfaces_rest_resources.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+  go-service_internal_products_interfaces_rest_resources.ErrorResponse:
+    properties:
+      error:
+        example: error message
+        type: string
+    type: object
+  resources.CreatePaymentResource:
+    properties:
+      payer_email:
+        example: buyer@example.com
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      quantity:
+        example: 1
+        minimum: 1
+        type: integer
+    required:
+    - payer_email
+    - product_id
+    - quantity
+    type: object
+  resources.CreateProductResource:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      description:
+        example: Product description
+        maxLength: 1000
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      price:
+        example: 99.99
+        minimum: 0
+        type: number
+      quantity:
+        example: 10
+        minimum: 0
+        type: integer
+      title:
+        example: Product Title
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - category
+    - image_url
+    - price
+    - quantity
+    - title
+    type: object
+  resources.PaymentCreationResponse:
+    properties:
+      amount:
+        example: 199.99
+        type: number
+      currency:
+        example: ARS
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      preference_id:
+        example: "123456"
+        type: string
+      preference_url:
+        example: https://www.mercadopago.com/checkout/v1/redirect?pref_id=123
+        type: string
+      product_title:
+        example: Special Product
+        type: string
+      public_key:
+        example: APP_USR-xxxxxxxx
+        type: string
+      quantity:
+        example: 1
+        type: integer
+      status:
+        example: pending
+        type: string
+    type: object
+  resources.PaymentResource:
+    properties:
+      amount:
+        example: 199.99
+        type: number
+      created_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+      currency:
+        example: ARS
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      preference_id:
+        example: "123456789"
+        type: string
+      preference_url:
+        example: https://www.mercadopago.com/checkout/v1/redirect?pref_id=123
+        type: string
+      product_id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      product_title:
+        example: Special Product
+        type: string
+      quantity:
+        example: 1
+        type: integer
+      status:
+        example: pending
+        type: string
+      updated_at:
+        example: "2024-01-01T00:00:00Z"
+        type: string
+    type: object
+  resources.ProductResource:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      created_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      description:
+        example: Product description
+        maxLength: 1000
+        type: string
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      price:
+        example: 99.99
+        minimum: 0
+        type: number
+      quantity:
+        example: 10
+        minimum: 0
+        type: integer
+      title:
+        example: Product Title
+        maxLength: 255
+        minLength: 1
+        type: string
+      updated_at:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+    required:
+    - category
+    - image_url
+    - price
+    - quantity
+    - title
+    type: object
+  resources.UpdateProductResource:
+    properties:
+      category:
+        example: Electronics
+        type: string
+      description:
+        example: Product description
+        maxLength: 1000
+        type: string
+      image_url:
+        example: https://example.com/image.jpg
+        type: string
+      price:
+        example: 99.99
+        minimum: 0
+        type: number
+      quantity:
+        example: 10
+        minimum: 0
+        type: integer
+      title:
+        example: Product Title
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: This is a products management API.
+  title: Products API
+  version: "1.0"
+paths:
+  /payments:
+    post:
+      consumes:
+      - application/json
+      description: Creates a Mercado Pago checkout preference tied to a product
+      parameters:
+      - description: Payment creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/resources.CreatePaymentResource'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/resources.PaymentCreationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+      summary: Create a payment preference
+      tags:
+      - payments
+  /payments/{id}:
+    get:
+      description: Retrieve payment and preference details
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/resources.PaymentResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go-service_internal_payments_interfaces_rest_resources.ErrorResponse'
+      summary: Get payment by ID
+      tags:
+      - payments
+  /products:
+    get:
+      description: Retrieve all products with optional pagination and category filter
+      parameters:
+      - description: Limit
+        in: query
+        name: limit
+        type: integer
+      - description: Offset
+        in: query
+        name: offset
+        type: integer
+      - description: Category filter (URL encoded for spaces, e.g., 'Cuidado%20de%20la%20piel')
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/resources.ProductResource'
+            type: array
+      summary: Get all products
+      tags:
+      - products
+    post:
+      consumes:
+      - application/json
+      description: Create a new product with the provided details
+      parameters:
+      - description: Product creation request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/resources.CreateProductResource'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/resources.ProductResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+      summary: Create a new product
+      tags:
+      - products
+  /products/{id}:
+    delete:
+      description: Delete a product by ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+      summary: Delete product
+      tags:
+      - products
+    get:
+      description: Retrieve a product by its ID
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/resources.ProductResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+      summary: Get product by ID
+      tags:
+      - products
+    put:
+      consumes:
+      - application/json
+      description: Update an existing product
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Product update request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/resources.UpdateProductResource'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/resources.ProductResource'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/go-service_internal_products_interfaces_rest_resources.ErrorResponse'
+      summary: Update product
+      tags:
+      - products
+swagger: "2.0"
