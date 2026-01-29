@@ -40,7 +40,7 @@ func NewProductController(
 func (c *ProductController) CreateProduct(ctx *fiber.Ctx) error {
 	var req resources.CreateProductResource
 	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	// Transform resource to command
@@ -48,13 +48,13 @@ func (c *ProductController) CreateProduct(ctx *fiber.Ctx) error {
 		req.ImageURL, req.Title, req.Price, req.Description, req.Category, req.Quantity,
 	)
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	// Execute command
 	productID, err := c.commandService.HandleCreate(ctx.Context(), cmd)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: "Internal server error"})
 	}
 
 	// Retrieve created product
@@ -81,7 +81,7 @@ func (c *ProductController) GetProduct(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	query, err := queries.NewFindProductByIDQuery(id)
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	product, err := c.queryService.HandleFindByID(ctx.Context(), query)
@@ -146,7 +146,7 @@ func (c *ProductController) GetAllProducts(ctx *fiber.Ctx) error {
 	}
 
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: "Internal server error"})
 	}
 
 	var responses []resources.ProductResource
@@ -171,17 +171,17 @@ func (c *ProductController) UpdateProduct(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	var req resources.UpdateProductResource
 	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	cmd, err := commands.NewUpdateProductCommand(id, req.ImageURL, req.Title, req.Price, req.Description, req.Category, req.Quantity)
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	err = c.commandService.HandleUpdate(ctx.Context(), cmd)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: "Internal server error"})
 	}
 
 	// Retrieve updated product
@@ -207,12 +207,12 @@ func (c *ProductController) DeleteProduct(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	cmd, err := commands.NewDeleteProductCommand(id)
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	err = c.commandService.HandleDelete(ctx.Context(), cmd)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: "Internal server error"})
 	}
 
 	return ctx.SendStatus(fiber.StatusNoContent)

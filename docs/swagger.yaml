@@ -1,4 +1,4 @@
-basePath: /
+basePath: /api/v1
 definitions:
   go-service_internal_payments_interfaces_rest_resources.ErrorResponse:
     properties:

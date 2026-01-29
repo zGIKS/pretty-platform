@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
+	"strings"
 
 	"go-service/internal/payments/domain/model/commands"
 	"go-service/internal/payments/domain/model/entities"
@@ -12,6 +14,8 @@ import (
 	"go-service/internal/payments/domain/services"
 	"go-service/internal/payments/infrastructure/mercadopago"
 	"go-service/internal/products/interfaces/acl"
+
+	"github.com/google/uuid"
 )
 
 type paymentCommandServiceImpl struct {
@@ -20,6 +24,27 @@ type paymentCommandServiceImpl struct {
 	productFacade   acl.ProductPaymentFacade
 	frontendBaseURL string
 	notificationURL string
+}
+
+func buildURL(baseURL, path string) (string, error) {
+	baseURL = strings.TrimSpace(baseURL)
+	if baseURL == "" {
+		return "", errors.New("base URL cannot be empty")
+	}
+
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return "", fmt.Errorf("invalid base URL %q: %w", baseURL, err)
+	}
+	if u.Scheme == "" || u.Host == "" {
+		return "", fmt.Errorf("invalid base URL %q: scheme and host are required (example: https://example.com)", baseURL)
+	}
+
+	ref, err := url.Parse(path)
+	if err != nil {
+		return "", fmt.Errorf("invalid path %q: %w", path, err)
+	}
+	return u.ResolveReference(ref).String(), nil
 }
 
 func NewPaymentCommandService(
@@ -40,6 +65,21 @@ func NewPaymentCommandService(
 
 func (s *paymentCommandServiceImpl) HandleCreate(ctx context.Context, cmd commands.CreatePaymentCommand) (*valueobjects.PaymentID, error) {
 	product, err := s.productFacade.FetchProductForPayment(ctx, cmd.ProductID())
+	if err != nil {
+		return nil, err
+	}
+
+	paymentUUID := uuid.New()
+
+	successURL, err := buildURL(s.frontendBaseURL, "/payments/success")
+	if err != nil {
+		return nil, err
+	}
+	failureURL, err := buildURL(s.frontendBaseURL, "/payments/failure")
+	if err != nil {
+		return nil, err
+	}
+	pendingURL, err := buildURL(s.frontendBaseURL, "/payments/pending")
 	if err != nil {
 		return nil, err
 	}
@@ -73,12 +113,12 @@ func (s *paymentCommandServiceImpl) HandleCreate(ctx context.Context, cmd comman
 			Email: cmd.PayerEmail(),
 		},
 		BackURLs: mercadopago.PreferenceBackURLs{
-			Success: fmt.Sprintf("%s/payments/success", s.frontendBaseURL),
-			Failure: fmt.Sprintf("%s/payments/failure", s.frontendBaseURL),
-			Pending: fmt.Sprintf("%s/payments/pending", s.frontendBaseURL),
+			Success: successURL,
+			Failure: failureURL,
+			Pending: pendingURL,
 		},
 		AutoReturn:        "approved",
-		ExternalReference: product.ProductID,
+		ExternalReference: paymentUUID.String(),
 	}
 
 	if s.notificationURL != "" {
@@ -105,7 +145,8 @@ func (s *paymentCommandServiceImpl) HandleCreate(ctx context.Context, cmd comman
 		return nil, err
 	}
 
-	payment, err := entities.NewPayment(
+	payment, err := entities.NewPaymentWithID(
+		paymentUUID,
 		productRefVO,
 		product.Title,
 		amountVO,
@@ -123,7 +164,7 @@ func (s *paymentCommandServiceImpl) HandleCreate(ctx context.Context, cmd comman
 		return nil, err
 	}
 
-	paymentID := payment.GetID()
+	paymentID := valueobjects.NewPaymentIDFromUUID(paymentUUID)
 	return &paymentID, nil
 }
 

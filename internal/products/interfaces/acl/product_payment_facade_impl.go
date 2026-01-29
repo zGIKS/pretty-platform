@@ -2,10 +2,13 @@ package acl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"go-service/internal/products/domain/model/queries"
 	"go-service/internal/products/domain/services"
+
+	"gorm.io/gorm"
 )
 
 type productPaymentFacadeImpl struct {
@@ -20,6 +23,16 @@ func NewProductPaymentFacade(queryService services.ProductQueryService, defaultC
 	}
 }
 
+type productNotFoundError struct {
+	productID string
+}
+
+func (e productNotFoundError) Error() string {
+	return fmt.Sprintf("product %s not found", e.productID)
+}
+
+func (e productNotFoundError) NotFound() bool { return true }
+
 func (f *productPaymentFacadeImpl) FetchProductForPayment(ctx context.Context, productID string) (*ProductPaymentDetails, error) {
 	query, err := queries.NewFindProductByIDQuery(productID)
 	if err != nil {
@@ -28,10 +41,13 @@ func (f *productPaymentFacadeImpl) FetchProductForPayment(ctx context.Context, p
 
 	product, err := f.queryService.HandleFindByID(ctx, query)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, productNotFoundError{productID: productID}
+		}
 		return nil, err
 	}
 	if product == nil {
-		return nil, fmt.Errorf("product %s not found", productID)
+		return nil, productNotFoundError{productID: productID}
 	}
 
 	return &ProductPaymentDetails{

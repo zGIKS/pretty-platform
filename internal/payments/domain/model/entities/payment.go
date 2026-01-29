@@ -1,6 +1,7 @@
 package entities
 
 import (
+	"errors"
 	"time"
 
 	"go-service/internal/payments/domain/model/valueobjects"
@@ -34,6 +35,37 @@ func NewPayment(
 ) (*Payment, error) {
 	now := time.Now()
 	id := uuid.New()
+	return &Payment{
+		ID:            id,
+		ProductID:     productRef.Value(),
+		ProductTitle:  productTitle,
+		Amount:        amount.Value(),
+		Currency:      currency.Value(),
+		Quantity:      quantity.Value(),
+		PreferenceID:  preferenceID.Value(),
+		PreferenceURL: preferenceURL,
+		Status:        status.Value(),
+		CreatedAt:     now,
+		UpdatedAt:     now,
+	}, nil
+}
+
+func NewPaymentWithID(
+	id uuid.UUID,
+	productRef valueobjects.ProductReference,
+	productTitle string,
+	amount valueobjects.Amount,
+	currency valueobjects.Currency,
+	quantity valueobjects.Quantity,
+	preferenceID valueobjects.PreferenceID,
+	preferenceURL string,
+	status valueobjects.PaymentStatus,
+) (*Payment, error) {
+	if id == uuid.Nil {
+		return nil, errors.New("payment ID cannot be nil")
+	}
+
+	now := time.Now()
 	return &Payment{
 		ID:            id,
 		ProductID:     productRef.Value(),
