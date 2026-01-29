@@ -42,17 +42,17 @@ func NewPaymentController(
 func (c *PaymentController) CreatePayment(ctx *fiber.Ctx) error {
 	var req resources.CreatePaymentResource
 	if err := ctx.BodyParser(&req); err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	cmd, err := commands.NewCreatePaymentCommand(req.ProductID, req.Quantity, req.PayerEmail)
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	paymentID, err := c.commandService.HandleCreate(ctx.Context(), cmd)
 	if err != nil {
-		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: "Internal server error"})
 	}
 
 	query, _ := queries.NewFindPaymentByIDQuery(paymentID.String())
@@ -78,12 +78,12 @@ func (c *PaymentController) GetPayment(ctx *fiber.Ctx) error {
 	id := ctx.Params("id")
 	query, err := queries.NewFindPaymentByIDQuery(id)
 	if err != nil {
-		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: err.Error()})
+		return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid request data"})
 	}
 
 	payment, err := c.queryService.HandleFindByID(ctx.Context(), query)
 	if err != nil {
-		return ctx.Status(fiber.StatusNotFound).JSON(resources.ErrorResponse{Error: "payment not found"})
+		return ctx.Status(fiber.StatusNotFound).JSON(resources.ErrorResponse{Error: "Payment not found"})
 	}
 
 	response := c.transformToResource(payment)
