@@ -2,8 +2,10 @@ package config
 
 import (
 	"log"
+	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -19,6 +21,7 @@ type Config struct {
 	DefaultCurrency         string
 	MercadoPagoPublicKey    string
 	MercadoPagoAccessToken  string
+	PublicBaseURL           string
 	FrontendBaseURL         string
 	PaymentsNotificationURL string
 	CorsAllowOrigins        string
@@ -43,6 +46,7 @@ func LoadConfig() *Config {
 		DefaultCurrency:         getEnv("DEFAULT_CURRENCY", ""),
 		MercadoPagoPublicKey:    getEnv("MERCADO_PAGO_PUBLIC_KEY", ""),
 		MercadoPagoAccessToken:  getEnv("MERCADO_PAGO_ACCESS_TOKEN", ""),
+		PublicBaseURL:           getEnv("PUBLIC_BASE_URL", ""),
 		FrontendBaseURL:         getEnv("FRONTEND_BASE_URL", ""),
 		PaymentsNotificationURL: getEnv("PAYMENTS_NOTIFICATION_URL", ""),
 		CorsAllowOrigins:        getEnv("CORS_ALLOW_ORIGINS", ""),
@@ -78,17 +82,35 @@ func LoadConfig() *Config {
 	if cfg.DefaultCurrency == "" {
 		log.Fatal("DEFAULT_CURRENCY is required")
 	}
-	if cfg.FrontendBaseURL == "" {
-		log.Fatal("FRONTEND_BASE_URL is required")
+	if cfg.PublicBaseURL == "" {
+		log.Fatal("PUBLIC_BASE_URL is required")
 	}
-	if cfg.PaymentsNotificationURL == "" {
-		log.Fatal("PAYMENTS_NOTIFICATION_URL is required")
+	if !isValidAbsoluteURL(cfg.PublicBaseURL) {
+		log.Fatal("PUBLIC_BASE_URL must be an absolute URL (example: https://example.com)")
+	}
+	if strings.TrimSpace(cfg.FrontendBaseURL) != "" && !isValidAbsoluteURL(cfg.FrontendBaseURL) {
+		log.Fatal("FRONTEND_BASE_URL must be an absolute URL (example: https://example.com)")
+	}
+	if strings.TrimSpace(cfg.PaymentsNotificationURL) == "" {
+		cfg.PaymentsNotificationURL = strings.TrimRight(cfg.PublicBaseURL, "/") + "/api/v1/payments/notifications"
+	}
+	if !isValidAbsoluteURL(cfg.PaymentsNotificationURL) {
+		log.Fatal("PAYMENTS_NOTIFICATION_URL must be an absolute URL (example: https://example.com/api/v1/payments/notifications)")
 	}
 	if cfg.CorsAllowOrigins == "" {
 		log.Fatal("CORS_ALLOW_ORIGINS is required")
 	}
 
 	return cfg
+}
+
+func isValidAbsoluteURL(raw string) bool {
+	raw = strings.TrimSpace(raw)
+	u, err := url.Parse(raw)
+	if err != nil {
+		return false
+	}
+	return u.Scheme != "" && u.Host != ""
 }
 
 func getEnv(key, defaultValue string) string {

@@ -2,6 +2,11 @@ package acl
 
 import "context"
 
+type ProductNotFoundError interface {
+	error
+	NotFound() bool
+}
+
 type ProductPaymentDetails struct {
 	ProductID string
 	Title     string

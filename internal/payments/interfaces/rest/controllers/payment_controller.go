@@ -1,12 +1,16 @@
 package controllers
 
 import (
+	"errors"
 	"go-service/internal/payments/domain/model/commands"
 	"go-service/internal/payments/domain/model/entities"
 	"go-service/internal/payments/domain/model/queries"
 	"go-service/internal/payments/domain/services"
 	"go-service/internal/payments/infrastructure/mercadopago"
 	"go-service/internal/payments/interfaces/rest/resources"
+	"go-service/internal/products/interfaces/acl"
+	"log"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -52,6 +56,18 @@ func (c *PaymentController) CreatePayment(ctx *fiber.Ctx) error {
 
 	paymentID, err := c.commandService.HandleCreate(ctx.Context(), cmd)
 	if err != nil {
+		var notFound acl.ProductNotFoundError
+		if errors.As(err, &notFound) && notFound.NotFound() {
+			return ctx.Status(fiber.StatusNotFound).JSON(resources.ErrorResponse{Error: "Product not found"})
+		}
+
+		log.Printf("CreatePayment failed: %v", err)
+		if strings.Contains(strings.ToLower(err.Error()), "mercado pago") {
+			if strings.Contains(err.Error(), "returned status 400") {
+				return ctx.Status(fiber.StatusBadRequest).JSON(resources.ErrorResponse{Error: "Invalid Mercado Pago preference configuration (check FRONTEND_BASE_URL back_urls)"})
+			}
+			return ctx.Status(fiber.StatusBadGateway).JSON(resources.ErrorResponse{Error: "Failed to create Mercado Pago preference"})
+		}
 		return ctx.Status(fiber.StatusInternalServerError).JSON(resources.ErrorResponse{Error: "Internal server error"})
 	}
 
@@ -88,6 +104,60 @@ func (c *PaymentController) GetPayment(ctx *fiber.Ctx) error {
 
 	response := c.transformToResource(payment)
 	return ctx.JSON(response)
+}
+
+type mpNotification struct {
+	Type  string `json:"type"`
+	Topic string `json:"topic"`
+	ID    string `json:"id"`
+	Data  struct {
+		ID string `json:"id"`
+	} `json:"data"`
+}
+
+// HandleNotifications receives Mercado Pago notifications (IPN/webhook) and updates payment status.
+// Mercado Pago sends different payload/query formats depending on integration, so this tries the
+// common ones: query `id`, `payment_id`, `data.id` or body `data.id`.
+func (c *PaymentController) HandleNotifications(ctx *fiber.Ctx) error {
+	var notif mpNotification
+	_ = ctx.BodyParser(&notif)
+
+	mpPaymentID := strings.TrimSpace(notif.Data.ID)
+	if mpPaymentID == "" {
+		mpPaymentID = strings.TrimSpace(notif.ID)
+	}
+	if mpPaymentID == "" {
+		mpPaymentID = strings.TrimSpace(ctx.Query("data.id"))
+	}
+	if mpPaymentID == "" {
+		mpPaymentID = strings.TrimSpace(ctx.Query("payment_id"))
+	}
+	if mpPaymentID == "" {
+		mpPaymentID = strings.TrimSpace(ctx.Query("id"))
+	}
+
+	if mpPaymentID == "" {
+		// Nothing to process; acknowledge to prevent retries storm.
+		return ctx.SendStatus(fiber.StatusOK)
+	}
+
+	mpPayment, err := c.mpClient.GetPayment(ctx.Context(), mpPaymentID)
+	if err != nil {
+		// Acknowledge anyway; MP will retry, and transient errors happen.
+		return ctx.SendStatus(fiber.StatusOK)
+	}
+
+	if strings.TrimSpace(mpPayment.ExternalReference) == "" {
+		return ctx.SendStatus(fiber.StatusOK)
+	}
+
+	cmd, err := commands.NewUpdatePaymentStatusCommand(mpPayment.ExternalReference, mpPayment.Status)
+	if err != nil {
+		return ctx.SendStatus(fiber.StatusOK)
+	}
+
+	_ = c.commandService.HandleStatusUpdate(ctx.Context(), cmd)
+	return ctx.SendStatus(fiber.StatusOK)
 }
 
 func (c *PaymentController) buildCreationResponse(payment *entities.Payment) resources.PaymentCreationResponse {

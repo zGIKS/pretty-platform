@@ -59,7 +59,11 @@ func main() {
 
 	paymentRepo := paymentRepositories.NewPaymentRepository(db)
 	mpClient := mercadopago.NewClient(cfg.MercadoPagoAccessToken, cfg.MercadoPagoPublicKey)
-	paymentCommandService := paymentsCommandServices.NewPaymentCommandService(paymentRepo, mpClient, productPaymentsFacade, cfg.FrontendBaseURL, cfg.PaymentsNotificationURL)
+	checkoutReturnBaseURL := cfg.FrontendBaseURL
+	if strings.TrimSpace(checkoutReturnBaseURL) == "" {
+		checkoutReturnBaseURL = cfg.PublicBaseURL
+	}
+	paymentCommandService := paymentsCommandServices.NewPaymentCommandService(paymentRepo, mpClient, productPaymentsFacade, checkoutReturnBaseURL, cfg.PaymentsNotificationURL)
 	paymentQueryService := paymentsQueryServices.NewPaymentQueryService(paymentRepo)
 	paymentController := paymentControllers.NewPaymentController(paymentCommandService, paymentQueryService, mpClient)
 
@@ -83,6 +87,19 @@ func main() {
 	api.Delete("/products/:id", productController.DeleteProduct)
 	api.Post("/payments", paymentController.CreatePayment)
 	api.Get("/payments/:id", paymentController.GetPayment)
+	api.Post("/payments/notifications", paymentController.HandleNotifications)
+
+	// Mercado Pago redirects the user to these URLs after checkout.
+	// If you don't have a public frontend yet, these endpoints provide a basic landing page.
+	app.Get("/payments/success", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).SendString("Payment success. You can close this tab.")
+	})
+	app.Get("/payments/failure", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).SendString("Payment failed. You can close this tab.")
+	})
+	app.Get("/payments/pending", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).SendString("Payment pending. You can close this tab.")
+	})
 
 	app.Get("/swagger-ui/*", fiberSwagger.WrapHandler)
 
