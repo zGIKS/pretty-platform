@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/postgres"
@@ -20,6 +21,12 @@ type Config struct {
 	MercadoPagoAccessToken  string
 	FrontendBaseURL         string
 	PaymentsNotificationURL string
+	CorsAllowOrigins        string
+	CorsAllowMethods        string
+	CorsAllowHeaders        string
+	CorsExposeHeaders       string
+	CorsAllowCredentials    bool
+	CorsMaxAge              int
 }
 
 func LoadConfig() *Config {
@@ -33,11 +40,17 @@ func LoadConfig() *Config {
 		DBUser:                  getEnv("DB_USER", ""),
 		DBPassword:              getEnv("DB_PASSWORD", ""),
 		DBName:                  getEnv("DB_NAME", ""),
-		DefaultCurrency:         getEnv("DEFAULT_CURRENCY", "ARS"),
+		DefaultCurrency:         getEnv("DEFAULT_CURRENCY", ""),
 		MercadoPagoPublicKey:    getEnv("MERCADO_PAGO_PUBLIC_KEY", ""),
 		MercadoPagoAccessToken:  getEnv("MERCADO_PAGO_ACCESS_TOKEN", ""),
-		FrontendBaseURL:         getEnv("FRONTEND_BASE_URL", "http://localhost:5173"),
+		FrontendBaseURL:         getEnv("FRONTEND_BASE_URL", ""),
 		PaymentsNotificationURL: getEnv("PAYMENTS_NOTIFICATION_URL", ""),
+		CorsAllowOrigins:        getEnv("CORS_ALLOW_ORIGINS", ""),
+		CorsAllowMethods:        getEnv("CORS_ALLOW_METHODS", "GET,POST,PUT,DELETE,OPTIONS"),
+		CorsAllowHeaders:        getEnv("CORS_ALLOW_HEADERS", "Origin, Content-Type, Accept, Authorization"),
+		CorsExposeHeaders:       getEnv("CORS_EXPOSE_HEADERS", ""),
+		CorsAllowCredentials:    getEnvAsBool("CORS_ALLOW_CREDENTIALS", false),
+		CorsMaxAge:              getEnvAsInt("CORS_MAX_AGE", 0),
 	}
 
 	// Validate required fields
@@ -62,6 +75,18 @@ func LoadConfig() *Config {
 	if cfg.MercadoPagoAccessToken == "" {
 		log.Fatal("MERCADO_PAGO_ACCESS_TOKEN is required")
 	}
+	if cfg.DefaultCurrency == "" {
+		log.Fatal("DEFAULT_CURRENCY is required")
+	}
+	if cfg.FrontendBaseURL == "" {
+		log.Fatal("FRONTEND_BASE_URL is required")
+	}
+	if cfg.PaymentsNotificationURL == "" {
+		log.Fatal("PAYMENTS_NOTIFICATION_URL is required")
+	}
+	if cfg.CorsAllowOrigins == "" {
+		log.Fatal("CORS_ALLOW_ORIGINS is required")
+	}
 
 	return cfg
 }
@@ -71,6 +96,30 @@ func getEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func getEnvAsBool(key string, defaultValue bool) bool {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	parsed, err := strconv.ParseBool(value)
+	if err != nil {
+		return defaultValue
+	}
+	return parsed
+}
+
+func getEnvAsInt(key string, defaultValue int) int {
+	value := os.Getenv(key)
+	if value == "" {
+		return defaultValue
+	}
+	parsed, err := strconv.Atoi(value)
+	if err != nil {
+		return defaultValue
+	}
+	return parsed
 }
 
 func InitDB(cfg *Config) *gorm.DB {

@@ -17,8 +17,11 @@ import (
 	productacl "go-service/internal/products/interfaces/acl"
 	"go-service/internal/products/interfaces/rest/controllers"
 	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
 	fiberSwagger "github.com/swaggo/fiber-swagger"
 )
@@ -27,7 +30,7 @@ import (
 // @version 1.0
 // @description This is a products management API.
 // @host localhost:3000
-// @BasePath /
+// @BasePath /api/v1
 func main() {
 	godotenv.Load()
 
@@ -36,7 +39,9 @@ func main() {
 		port = "3000"
 	}
 
-	docs.SwaggerInfo.Host = "localhost:" + port
+	docs.SwaggerInfo.Host = ""
+	docs.SwaggerInfo.SwaggerTemplate = strings.Replace(docs.SwaggerInfo.SwaggerTemplate, "\"host\": \"{{.Host}}\",", "", -1)
+	docs.SwaggerInfo.BasePath = "/api/v1"
 
 	// Load config and init DB
 	cfg := config.LoadConfig()
@@ -59,15 +64,25 @@ func main() {
 	paymentController := paymentControllers.NewPaymentController(paymentCommandService, paymentQueryService, mpClient)
 
 	app := fiber.New()
+	app.Use(recover.New()) // Recover from panics to avoid network errors
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     cfg.CorsAllowOrigins,
+		AllowMethods:     cfg.CorsAllowMethods,
+		AllowHeaders:     cfg.CorsAllowHeaders,
+		ExposeHeaders:    cfg.CorsExposeHeaders,
+		AllowCredentials: cfg.CorsAllowCredentials,
+		MaxAge:           cfg.CorsMaxAge,
+	}))
 
 	// Routes
-	app.Post("/products", productController.CreateProduct)
-	app.Get("/products", productController.GetAllProducts)
-	app.Get("/products/:id", productController.GetProduct)
-	app.Put("/products/:id", productController.UpdateProduct)
-	app.Delete("/products/:id", productController.DeleteProduct)
-	app.Post("/payments", paymentController.CreatePayment)
-	app.Get("/payments/:id", paymentController.GetPayment)
+	api := app.Group("/api/v1")
+	api.Post("/products", productController.CreateProduct)
+	api.Get("/products", productController.GetAllProducts)
+	api.Get("/products/:id", productController.GetProduct)
+	api.Put("/products/:id", productController.UpdateProduct)
+	api.Delete("/products/:id", productController.DeleteProduct)
+	api.Post("/payments", paymentController.CreatePayment)
+	api.Get("/payments/:id", paymentController.GetPayment)
 
 	app.Get("/swagger-ui/*", fiberSwagger.WrapHandler)
 
